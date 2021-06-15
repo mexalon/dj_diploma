@@ -44,7 +44,8 @@ class ProductReview(models.Model):
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        verbose_name='автор'
+        verbose_name='автор',
+        related_name='reviwes',
     )
 
     product_id = models.ForeignKey(
@@ -59,7 +60,7 @@ class ProductReview(models.Model):
         verbose_name='текст отзыва',
     )
 
-    stars = models.IntegerField(default=5, verbose_name='оценка')
+    stars = models.IntegerField(verbose_name='оценка')
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

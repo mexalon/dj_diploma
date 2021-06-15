@@ -28,14 +28,8 @@ class ProductSerializer(serializers.ModelSerializer):
 
 class PositionSerializer(serializers.Serializer):
     """Serializer для позиции."""
-
-    product_id = PrimaryKeyRelatedField(queryset=Product.objects.all(), required=True)
-
+    product_id = PrimaryKeyRelatedField(queryset=Product.objects.all())
     amount = serializers.IntegerField(min_value=1, default=1)
-
-    # class Meta:
-    #     model = Position
-    #     fields = ('product_id', 'amount')
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -43,9 +37,7 @@ class OrderSerializer(serializers.ModelSerializer):
     client = UserSerializer(
         read_only=True,
     )
-
-    positions = PositionSerializer(many=True)
-
+    positions = PositionSerializer(many=True, required=True)
     total = serializers.DecimalField(
         read_only=True,
         max_digits=12,
@@ -57,35 +49,86 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = ('id', 'client', 'positions', 'total', 'status', 'created_at',)
 
     def create(self, validated_data):
-        """Метод для создания"""
-
         validated_data["client"] = self.context["request"].user
-        return super().create(validated_data)
+        pos = validated_data.pop('positions')
+        prods = [{'p': entry.get('product_id'), 'a': entry.get('amount')} for entry in pos]
 
-    def validate(self, data):
-        """Метод для валидации. Вызывается при создании и обновлении."""
-        # user = self.context["request"].user
-        #
-        # if data.get('status') == 'OPEN' and adv_open >= 10:
-        #     raise serializers.ValidationError(f"{user} уже создал {adv_open} открытых обьявлений")
+        total = 0  # вычисление общей цены
+        for item in prods:
+            total += item['p'].price * item['a']
+
+        validated_data["total"] = total
+
+        order = super().create(validated_data)
+        [
+            Position.objects.create(
+                order_id=order,
+                product_id=item['p'],
+                amount=item['a']
+            )
+            for item in prods
+        ]
+        return order
+
+    def update(self, instance, validated_data):
+        pos = validated_data.pop('positions', False)
+        if pos:
+            prods = [{'p': entry.get('product_id'), 'a': entry.get('amount', 1)} for entry in pos]
+
+            total = 0  # пересчёт общей цены
+            for item in prods:
+                total += item['p'].price * item['a']
+
+            validated_data["total"] = total
+
+            [old_pos.delete() for old_pos in instance.positions.all()]
+            # не знаю, как тут лучше поступить. Удалил всё что было и заново создал новые связи
+
+            [
+                Position.objects.create(
+                    order_id=instance,
+                    product_id=item['p'],
+                    amount=item['a']
+                )
+                for item in prods
+            ]
+
+        instance = super().update(instance, validated_data)
+        return instance
+
+    def validate_positions(self, data):
+        if not data:
+            raise serializers.ValidationError("Заказ не может быть пустым")
+
         return data
 
 
 class ProductReviewSerializer(serializers.ModelSerializer):
     """Serializer для отзыва."""
+    author = UserSerializer(
+        read_only=True,
+    )
+
+    product_id = PrimaryKeyRelatedField(queryset=Product.objects.all())
+
     stars = serializers.IntegerField(
         min_value=0,
         max_value=5,
+        default=5,
     )
 
     class Meta:
         model = ProductReview
-        fields = ('id', 'author', 'product_id', 'stars', 'created_at')
+        fields = ('id', 'author', 'product_id', 'text', 'stars', 'created_at')
 
     def create(self, validated_data):
-        """Метод для создания"""
         validated_data["author"] = self.context["request"].user
         return super().create(validated_data)
+
+    def validate_product_id(self, value):
+        if value in [revs.product_id for revs in self.context["request"].user.reviwes.only('product_id').all()]:
+            raise serializers.ValidationError("Вы уже сделали отзыв на этот продукт")
+        return value
 
 
 class ProductCollectionSerializer(serializers.ModelSerializer):
