@@ -1,27 +1,31 @@
+from django.shortcuts import redirect
+from django.urls import reverse
 from rest_framework.viewsets import ModelViewSet
-from .models import Orders, Products, ProductReviews, ProductCollections
-from .serializers import OrdersSerializer, ProductsSerializer, ProductReviewsSerializer, ProductCollectionsSerializer
+from .models import Order, Product, ProductReview, ProductCollection
+from .serializers import OrderSerializer, ProductSerializer, ProductReviewSerializer, ProductCollectionSerializer
 
 
-class ProductsViewSet(ModelViewSet):
+class ProductViewSet(ModelViewSet):
     """ViewSet для товара."""
-    queryset = Products.objects.all()
-    serializer_class = ProductsSerializer
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
 
 
-class OrdersViewSet(ModelViewSet):
+class OrderViewSet(ModelViewSet):
     """ViewSet для заказа."""
-    queryset = Orders.objects.all()
-    serializer_class = OrdersSerializer
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
 
 
-class ProductReviewsViewSet(ModelViewSet):
+class ProductReviewViewSet(ModelViewSet):
     """ViewSet для отзыва."""
-    queryset = ProductReviews.objects.all()
-    serializer_class = ProductReviewsSerializer
+    queryset = ProductReview.objects.all()
+    serializer_class = ProductReviewSerializer
 
 
-class ProductCollectionsViewSet(ModelViewSet):
+class ProductCollectionViewSet(ModelViewSet):
     """ViewSet для подборки."""
-    queryset = ProductCollections.objects.all()
-    serializer_class = ProductCollectionsSerializer
+    queryset = ProductCollection.objects.all()
+    serializer_class = ProductCollectionSerializer
+
+

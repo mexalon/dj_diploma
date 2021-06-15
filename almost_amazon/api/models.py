@@ -10,7 +10,7 @@ class OrderStatusChoices(models.TextChoices):
     DONE = "DONE", "Завершён"
 
 
-class Products(models.Model):
+class Product(models.Model):
     """товар"""
     name = models.CharField(
         max_length=256,
@@ -32,11 +32,14 @@ class Products(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        verbose_name_plural = 'Products'
+
     def __str__(self):
         return f"{self.name}"
 
 
-class ProductReviews(models.Model):
+class ProductReview(models.Model):
     """отзыв к товару"""
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -45,7 +48,7 @@ class ProductReviews(models.Model):
     )
 
     product_id = models.ForeignKey(
-        Products,
+        Product,
         on_delete=models.CASCADE,
         verbose_name='товар'
     )
@@ -63,9 +66,10 @@ class ProductReviews(models.Model):
 
     class Meta:
         unique_together = ('author', 'product_id')
+        verbose_name_plural = 'Product reviews'
 
 
-class Orders(models.Model):
+class Order(models.Model):
     """заказ"""
     client = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -73,7 +77,7 @@ class Orders(models.Model):
         verbose_name='клиент'
     )
 
-    order_items = models.ManyToManyField(Products, through='Cart')
+    order_items = models.ManyToManyField(Product, through='Position')
 
     status = models.TextField(
         choices=OrderStatusChoices.choices,
@@ -90,33 +94,39 @@ class Orders(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        verbose_name_plural = 'Orders'
+
     def __str__(self):
         return f"{self.id} {self.created_at} {self.total}"
 
 
-class Cart(models.Model):
+class Position(models.Model):
     """таблица для связи заказ - товар"""
     product_id = models.ForeignKey(
-        Products,
+        Product,
         on_delete=models.CASCADE,
         verbose_name='товар',
     )
+
     order_id = models.ForeignKey(
-        Orders,
+        Order,
         on_delete=models.CASCADE,
         verbose_name='заказ',
+        related_name='positions'
     )
 
     amount = models.IntegerField(default=1)
 
     class Meta:
         unique_together = ('order_id', 'product_id')
+        verbose_name_plural = 'Positions'
 
     def __str__(self):
         return f"{self.product_id} {self.amount}"
 
 
-class ProductCollections(models.Model):
+class ProductCollection(models.Model):
     """подборка продуктов от админа"""
     title = models.CharField(
         max_length=256,
@@ -129,11 +139,13 @@ class ProductCollections(models.Model):
         verbose_name='текст подборки',
     )
 
-    collection_items = models.ManyToManyField(Products)
+    collection_items = models.ManyToManyField(Product)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        verbose_name_plural = 'Product collections'
+
     def __str__(self):
         return f"{self.id} {self.title}"
-

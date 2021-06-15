@@ -1,9 +1,11 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Orders, Products, ProductReviews, ProductCollections, Cart
+from rest_framework.relations import PrimaryKeyRelatedField
+
+from .models import Order, Product, ProductReview, ProductCollection, Position
 
 
-class UsersSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     """Serializer для пользователя."""
 
     class Meta:
@@ -12,11 +14,37 @@ class UsersSerializer(serializers.ModelSerializer):
                   'last_name',)
 
 
-class OrdersSerializer(serializers.ModelSerializer):
+class ProductSerializer(serializers.ModelSerializer):
+    """Serializer для товара."""
+    price = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    class Meta:
+        model = Product
+        fields = ('id', 'name', 'price',)
+
+
+class PositionSerializer(serializers.Serializer):
+    """Serializer для позиции."""
+
+    product_id = PrimaryKeyRelatedField(queryset=Product.objects.all(), required=True)
+
+    amount = serializers.IntegerField(min_value=1, default=1)
+
+    # class Meta:
+    #     model = Position
+    #     fields = ('product_id', 'amount')
+
+
+class OrderSerializer(serializers.ModelSerializer):
     """Serializer для заказа."""
-    client = UsersSerializer(
+    client = UserSerializer(
         read_only=True,
     )
+
+    positions = PositionSerializer(many=True)
 
     total = serializers.DecimalField(
         read_only=True,
@@ -25,11 +53,12 @@ class OrdersSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = Orders
-        fields = ('id', 'client', 'total', 'status', 'created_at',)
+        model = Order
+        fields = ('id', 'client', 'positions', 'total', 'status', 'created_at',)
 
     def create(self, validated_data):
         """Метод для создания"""
+
         validated_data["client"] = self.context["request"].user
         return super().create(validated_data)
 
@@ -42,20 +71,7 @@ class OrdersSerializer(serializers.ModelSerializer):
         return data
 
 
-class ProductsSerializer(serializers.ModelSerializer):
-    """Serializer для товара."""
-    price = serializers.DecimalField(
-        read_only=True,
-        max_digits=10,
-        decimal_places=2,
-    )
-
-    class Meta:
-        model = Products
-        fields = ('id', 'name', 'price',)
-
-
-class ProductReviewsSerializer(serializers.ModelSerializer):
+class ProductReviewSerializer(serializers.ModelSerializer):
     """Serializer для отзыва."""
     stars = serializers.IntegerField(
         min_value=0,
@@ -63,7 +79,7 @@ class ProductReviewsSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = ProductReviews
+        model = ProductReview
         fields = ('id', 'author', 'product_id', 'stars', 'created_at')
 
     def create(self, validated_data):
@@ -72,18 +88,9 @@ class ProductReviewsSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-class CartSerializer(serializers.ModelSerializer):
-    """Serializer для корзины."""
-    amount = serializers.IntegerField(min_value=1)
-
-    class Meta:
-        model = Cart
-        fields = '__all__'
-
-
-class ProductCollectionsSerializer(serializers.ModelSerializer):
+class ProductCollectionSerializer(serializers.ModelSerializer):
     """Serializer для подборки."""
 
     class Meta:
-        model = ProductCollections
+        model = ProductCollection
         fields = ('id', 'title', 'collection_items', 'created_at')
