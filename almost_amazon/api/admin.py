@@ -7,16 +7,22 @@ class PositionInline(admin.TabularInline):
     extra = 1
 
 
+class CollectinInline(admin.TabularInline):
+    model = ProductCollection.collection_items.through
+    extra = 1
+
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     inlines = (PositionInline,)
-    exclude = ('client',)
+
+    ordering = ('-created_at',)
 
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    ...
-    # inlines = (CartInline,)
+    list_display = ('id', 'name', 'price')
+    ordering = ('id',)
 
 
 @admin.register(ProductReview)
@@ -26,9 +32,9 @@ class ProductReviewAdmin(admin.ModelAdmin):
 
 @admin.register(ProductCollection)
 class ProductCollectionAdmin(admin.ModelAdmin):
-    pass
+    exclude = ('collection_items',)
+    inlines = (CollectinInline,)
 
-
-@admin.register(Position)
-class PositionAdmin(admin.ModelAdmin):
-    pass
+# @admin.register(Position)
+# class PositionAdmin(admin.ModelAdmin):
+#     pass

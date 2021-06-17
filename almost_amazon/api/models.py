@@ -69,6 +69,9 @@ class ProductReview(models.Model):
         unique_together = ('author', 'product_id')
         verbose_name_plural = 'Product reviews'
 
+    def __str__(self):
+        return f"Отзыв на {self.product_id.name} от {self.author}"
+
 
 class Order(models.Model):
     """заказ"""
@@ -90,6 +93,7 @@ class Order(models.Model):
         default=1,
         max_digits=12,
         decimal_places=2,
+        verbose_name='сумма заказа'
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -99,7 +103,7 @@ class Order(models.Model):
         verbose_name_plural = 'Orders'
 
     def __str__(self):
-        return f"{self.id} {self.created_at} {self.total}"
+        return f"Создан {self.client} {self.created_at.strftime('%c')} сумма заказа {self.total}"
 
 
 class Position(models.Model):
@@ -117,7 +121,10 @@ class Position(models.Model):
         related_name='positions'
     )
 
-    amount = models.IntegerField(default=1)
+    amount = models.IntegerField(
+        default=1,
+        verbose_name='количество'
+    )
 
     class Meta:
         unique_together = ('order_id', 'product_id')
@@ -149,4 +156,4 @@ class ProductCollection(models.Model):
         verbose_name_plural = 'Product collections'
 
     def __str__(self):
-        return f"{self.id} {self.title}"
+        return f"{self.title}"

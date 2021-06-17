@@ -23,7 +23,13 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ('id', 'name', 'price',)
+        fields = ('id', 'name', 'description', 'price',)
+
+    def validate_price(self, data):
+        if data <= 0:
+            raise serializers.ValidationError("Цена не может быть нулевой или отрицательной")
+
+        return data
 
 
 class PositionSerializer(serializers.Serializer):
@@ -46,7 +52,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ('id', 'client', 'positions', 'total', 'status', 'created_at',)
+        fields = ('id', 'client', 'positions', 'total', 'status', 'created_at', 'updated_at')
 
     def create(self, validated_data):
         validated_data["client"] = self.context["request"].user
@@ -136,4 +142,4 @@ class ProductCollectionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductCollection
-        fields = ('id', 'title', 'collection_items', 'created_at')
+        fields = ('id', 'title', 'text', 'collection_items', 'created_at')
