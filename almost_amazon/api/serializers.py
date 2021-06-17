@@ -50,6 +50,7 @@ class OrderSerializer(serializers.ModelSerializer):
         decimal_places=2,
     )
 
+
     class Meta:
         model = Order
         fields = ('id', 'client', 'positions', 'total', 'status', 'created_at', 'updated_at')
