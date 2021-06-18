@@ -11,7 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'first_name',
-                  'last_name',)
+                  'last_name', 'email')
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -40,7 +40,7 @@ class PositionSerializer(serializers.Serializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     """Serializer для заказа."""
-    client = UserSerializer(
+    creator = UserSerializer(
         read_only=True,
     )
     positions = PositionSerializer(many=True, required=True)
@@ -53,10 +53,10 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ('id', 'client', 'positions', 'total', 'status', 'created_at', 'updated_at')
+        fields = ('id', 'creator', 'positions', 'total', 'status', 'created_at', 'updated_at')
 
     def create(self, validated_data):
-        validated_data["client"] = self.context["request"].user
+        validated_data["creator"] = self.context["request"].user
         pos = validated_data.pop('positions')
         prods = [{'p': entry.get('product_id'), 'a': entry.get('amount')} for entry in pos]
 
@@ -112,7 +112,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
 class ProductReviewSerializer(serializers.ModelSerializer):
     """Serializer для отзыва."""
-    author = UserSerializer(
+    creator = UserSerializer(
         read_only=True,
     )
 
@@ -126,10 +126,10 @@ class ProductReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductReview
-        fields = ('id', 'author', 'product_id', 'text', 'stars', 'created_at')
+        fields = ('id', 'creator', 'product_id', 'text', 'stars', 'created_at')
 
     def create(self, validated_data):
-        validated_data["author"] = self.context["request"].user
+        validated_data["creator"] = self.context["request"].user
         return super().create(validated_data)
 
     def validate_product_id(self, value):

@@ -41,7 +41,7 @@ class Product(models.Model):
 
 class ProductReview(models.Model):
     """отзыв к товару"""
-    author = models.ForeignKey(
+    creator = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         verbose_name='автор',
@@ -66,16 +66,16 @@ class ProductReview(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ('author', 'product_id')
+        unique_together = ('creator', 'product_id')
         verbose_name_plural = 'Product reviews'
 
     def __str__(self):
-        return f"Отзыв на {self.product_id.name} от {self.author}"
+        return f"Отзыв на {self.product_id.name} от {self.creator}"
 
 
 class Order(models.Model):
     """заказ"""
-    client = models.ForeignKey(
+    creator = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         verbose_name='клиент'
@@ -103,7 +103,7 @@ class Order(models.Model):
         verbose_name_plural = 'Orders'
 
     def __str__(self):
-        return f"Создан {self.client} {self.created_at.strftime('%c')} сумма заказа {self.total}"
+        return f"Создан {self.creator} {self.created_at.strftime('%c')} сумма заказа {self.total}"
 
 
 class Position(models.Model):

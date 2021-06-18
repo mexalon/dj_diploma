@@ -6,7 +6,7 @@ from rest_framework.viewsets import ModelViewSet
 from .filters import ProductFilter, ProductReviewFilter, OrderFilter
 from .models import Order, Product, ProductReview, ProductCollection
 from .serializers import OrderSerializer, ProductSerializer, ProductReviewSerializer, ProductCollectionSerializer
-from .permissions import AuthorOrAdminPermission, ClientOrAdminPermission, OrderUpdatePermission, OrderCreatePermission
+from .permissions import CreatorOrAdminPermission, CreatorOrAdminPermission, OrderUpdatePermission, OrderCreatePermission
 
 
 class ProductViewSet(ModelViewSet):
@@ -33,7 +33,7 @@ class OrderViewSet(ModelViewSet):
 
     def list(self, request):
         if not request.user.is_staff:
-            queryset = Order.objects.filter(client=request.user)
+            queryset = Order.objects.filter(creator=request.user)
         else:
             queryset = Order.objects.all()
 
@@ -43,11 +43,11 @@ class OrderViewSet(ModelViewSet):
     def get_permissions(self):
         permissions = [IsAuthenticated]
         if self.action in ["list", "retrieve", ]:
-            permissions += [ClientOrAdminPermission]
+            permissions += [CreatorOrAdminPermission]
         if self.action in ["create", ]:
             permissions += [OrderCreatePermission]
         if self.action in ["update", "partial_update", 'destroy']:
-            permissions += [ClientOrAdminPermission, OrderUpdatePermission]
+            permissions += [CreatorOrAdminPermission, OrderUpdatePermission]
 
         return [p() for p in permissions]
 
@@ -61,8 +61,10 @@ class ProductReviewViewSet(ModelViewSet):
 
     def get_permissions(self):
         permissions = [AllowAny]
-        if self.action in ["create", "update", "partial_update", 'destroy']:
-            permissions += [AuthorOrAdminPermission]
+        if self.action in ["create", ]:
+            permissions += [IsAuthenticated]
+        if self.action in ["update", "partial_update", 'destroy']:
+            permissions += [CreatorOrAdminPermission]
 
         return [p() for p in permissions]
 

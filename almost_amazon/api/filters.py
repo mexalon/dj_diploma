@@ -1,5 +1,5 @@
 from django_filters import rest_framework as filters
-from .models import Order, Product, ProductReview, ProductCollection, OrderStatusChoices
+from .models import Order, Product, ProductReview, OrderStatusChoices
 
 
 class ProductFilter(filters.FilterSet):
@@ -20,7 +20,7 @@ class ProductReviewFilter(filters.FilterSet):
 
     class Meta:
         model = ProductReview
-        fields = ('author', 'product_id', 'created_at', 'stars')
+        fields = ('creator', 'product_id', 'created_at', 'stars')
 
 
 class OrderFilter(filters.FilterSet):

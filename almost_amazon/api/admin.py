@@ -15,7 +15,6 @@ class CollectinInline(admin.TabularInline):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     inlines = (PositionInline,)
-
     ordering = ('-created_at',)
 
 
@@ -27,7 +26,7 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(ProductReview)
 class ProductReviewAdmin(admin.ModelAdmin):
-    exclude = ('author',)
+    exclude = ('creator',)
 
 
 @admin.register(ProductCollection)
@@ -35,6 +34,3 @@ class ProductCollectionAdmin(admin.ModelAdmin):
     exclude = ('collection_items',)
     inlines = (CollectinInline,)
 
-# @admin.register(Position)
-# class PositionAdmin(admin.ModelAdmin):
-#     pass

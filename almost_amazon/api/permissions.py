@@ -1,20 +1,18 @@
 from rest_framework import permissions
 
 
-class AuthorOrAdminPermission(permissions.BasePermission):
+class CreatorOrAdminPermission(permissions.BasePermission):
+    message = 'Это могут делать только создатель и администратор'
 
     def has_object_permission(self, request, view, obj):
-        return request.user == obj.author or request.user.is_staff
-
-
-class ClientOrAdminPermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return request.user == obj.client or request.user.is_staff
+        return request.user == obj.creator or request.user.is_staff
 
 
 class OrderCreatePermission(permissions.BasePermission):
+    message = 'Нельзя указывать статус заказа при создании'
+
     def has_permission(self, request, view):
-        return not request.data.get('status', False)  # нельзя указывать статус заказа при создании
+        return not request.data.get('status', False)
 
 
 class OrderUpdatePermission(permissions.BasePermission):
@@ -22,6 +20,8 @@ class OrderUpdatePermission(permissions.BasePermission):
         if request.user.is_staff:
             return True
         elif request.data.get('status', False):
-            return False  # запрещены манипуляции со статусом всем кроме админов
+            self.message = 'Менять статус заказа может только администратор'
+            return False
         else:
-            return obj.status == "NEW"  # клиент может изменят и удалать только новые заказы
+            self.message = 'Клиент может изменят и удалать только новые заказы'
+            return obj.status == "NEW"
