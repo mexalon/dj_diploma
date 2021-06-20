@@ -1,0 +1,32 @@
+# примеры API-запросов
+
+# получение списка продуктов
+GET localhost:8000/api/v1/products/
+Content-Type: application/json
+
+###
+# создание продукта
+POST localhost:8000/api/v1/products/
+Content-Type: application/json
+Authorization: Token xxxxxxx
+
+{
+"name": "тестовый продукт",
+        "description": "",
+        "price": "2.00"
+        }
+
+
+###
+# создание заказа
+POST localhost:8000/api/v1/orders/
+Content-Type: application/json
+Authorization: Token xxxxxxx
+
+{
+"positions": [
+    {"product_id": 1, "amount": 2},
+    {"product_id": 2, "amount": 2},
+    {"product_id": 3, "amount": 1}
+    ]
+    }
